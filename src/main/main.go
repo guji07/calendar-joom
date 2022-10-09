@@ -66,6 +66,9 @@ func startServer(appConfig *config.AppConfig, connectionUrl string) {
 		log.Fatal(err)
 	}
 	db, err := sql.Open("postgres", connectionUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
 	goquDb := goqu.New("postgres", db)
 	repository := storage.NewRepository(goquDb)
 
