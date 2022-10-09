@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"github.com/pkg/errors"
+	"github.com/teambition/rrule-go"
+	"sort"
 	"time"
 
 	"cryptoColony/src/model"
@@ -20,34 +23,50 @@ func (u *UserService) CreateUser(ctx context.Context, user model.User) (int, err
 	return u.Repository.CreateUser(ctx, user)
 }
 
+func (u *UserService) IsUserExist(ctx context.Context, userID int) (bool, error) {
+	return u.Repository.IsUserExist(ctx, userID)
+}
+
 func (u *UserService) FindWindowForUsers(ctx context.Context, usersIDs []int, duration time.Duration) (time.Time, error) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second*3)
+	defer cancel()
+	return u.searchForFreeTime(ctxWithTimeout, usersIDs, duration)
+}
+
+func (u *UserService) searchForFreeTime(ctx context.Context, usersIDs []int, duration time.Duration) (time.Time, error) {
 	freeTimeForEvent := time.Now().Truncate(time.Minute).UTC()
 
-	var found = false
-	for !found {
-		found = true
-		for _, userID := range usersIDs {
-			isFree, overlapEnd, err := u.CheckTimerangeForUserFree(ctx, userID, freeTimeForEvent, freeTimeForEvent.Add(time.Minute*duration))
+	for {
+		select {
+		case <-ctx.Done():
+			return time.Time{}, errors.New("context timeout in searchForFreeTime")
+		default:
+			isFree, overlapEnd, err := u.checkTimerangeIsFree(ctx, usersIDs, freeTimeForEvent, freeTimeForEvent.Add(time.Minute*duration))
 			if err != nil {
 				return time.Time{}, err
 			}
 			if !isFree {
 				freeTimeForEvent = overlapEnd
-				found = false
-				break
+			} else {
+				return freeTimeForEvent, nil
 			}
 		}
 	}
-	return freeTimeForEvent, nil
 }
 
-func (u *UserService) CheckTimerangeForUserFree(ctx context.Context, userID int,
+func (u *UserService) checkTimerangeIsFree(ctx context.Context, userIDs []int,
 	startTime, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
-	events, err := u.Repository.GetEventsByUserID(ctx, userID)
-
-	for _, v := range events {
-		if u.isTimeRangesOverlaps(startTime, endTime, v.BeginTime.UTC(), v.EndTime.UTC()) {
-			return false, v.EndTime.UTC(), nil
+	events, err := u.Repository.GetEventsByUserIDs(ctx, userIDs, time.Time{}, startTime)
+	for _, event := range events {
+		if event.Repeatable {
+			isFree, overlapEnd, err = u.checkRepeatableEvent(event, startTime, endTime)
+			if err != nil || !isFree {
+				return isFree, overlapEnd, err
+			}
+		} else {
+			if u.isTimeRangesOverlaps(startTime, endTime, event.BeginTime.UTC(), event.EndTime.UTC()) {
+				return false, event.EndTime.UTC(), nil
+			}
 		}
 	}
 	if err != nil {
@@ -56,8 +75,21 @@ func (u *UserService) CheckTimerangeForUserFree(ctx context.Context, userID int,
 	return true, time.Time{}, nil
 }
 
+func (u *UserService) checkRepeatableEvent(event model.Event, startTime time.Time, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
+	ret, err := rrule.StrToRRule(event.RepeatOption)
+	if err != nil {
+		return false, time.Time{}, err
+	}
+
+	occurrences := ret.Between(startTime.Add(-(time.Duration(event.Duration) * time.Minute)), endTime, false)
+
+	if len(occurrences) > 0 {
+		sort.Slice(occurrences, func(i, j int) bool { return occurrences[i].Before(occurrences[j]) })
+		return false, occurrences[len(occurrences)-1].Add(time.Duration(event.Duration) * time.Minute).UTC(), nil
+	}
+	return true, time.Time{}, nil
+}
+
 func (u *UserService) isTimeRangesOverlaps(windowStart, windowEnd, eventStart, eventEnd time.Time) bool {
-	println(windowStart.String(), windowEnd.String(), eventStart.String(), eventEnd.String())
-	println("check results: ", windowStart.Before(eventEnd) && eventStart.Before(windowEnd))
 	return windowStart.Before(eventEnd) && eventStart.Before(windowEnd)
 }

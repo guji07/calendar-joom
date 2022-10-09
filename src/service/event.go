@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/teambition/rrule-go"
+	"sort"
+	"time"
 
 	"cryptoColony/src/model"
 	"cryptoColony/src/storage"
@@ -18,6 +21,11 @@ func NewEventService(repository storage.RepositoryInterface) EventService {
 }
 
 func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invitedUsers []int) (int64, error) {
+	exist, err := e.Repository.IsUserExist(ctx, event.Author)
+	if err != nil || !exist {
+		return 0, errors.Wrapf(model.ErrUserNotExist, "userID:%d", event.Author)
+	}
+
 	event.Duration = int(event.EndTime.Sub(event.BeginTime).Minutes())
 	eventID, err := e.Repository.CreateEvent(ctx, event)
 	if err != nil {
@@ -25,6 +33,10 @@ func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invit
 	}
 	usersEvents := make([]model.UserEvent, len(invitedUsers))
 	for i, v := range invitedUsers {
+		exist, err := e.Repository.IsUserExist(ctx, v)
+		if err != nil || !exist {
+			return 0, errors.Wrapf(model.ErrUserNotExist, "userID:%d", v)
+		}
 		usersEvents[i] = model.UserEvent{
 			UserID:  v,
 			EventID: eventID,
@@ -50,18 +62,55 @@ func (e *EventService) GetEvent(ctx context.Context, eventID int) (model.Event, 
 	return event, nil
 }
 
-func (e *EventService) GetEventsByUserID(ctx context.Context, userID int) ([]model.Event, error) {
-	return e.Repository.GetEventsByUserID(ctx, userID)
+func (e *EventService) GetEventsByUserID(ctx context.Context, userID int, from, to time.Time) ([]model.Event, error) {
+	events, err := e.Repository.GetEventsByUserIDs(ctx, []int{userID}, from, to)
+	if err != nil {
+		return []model.Event{}, err
+	}
+
+	for i := 0; i < len(events); i++ {
+		event := events[i]
+		if event.Repeatable {
+			ret, err := rrule.StrToRRule(event.RepeatOption)
+			if err != nil {
+				return []model.Event{}, err
+			}
+			occurrences := ret.Between(from.Add(-(time.Duration(event.Duration) * time.Minute)), to, true)
+			if len(occurrences) > 0 {
+				events = RemoveEvent(events, i)
+				i--
+				e.addOccurrencesToEvents(occurrences, event, &events)
+			}
+		}
+	}
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].BeginTime.Before(events[j].BeginTime)
+	})
+	return events, nil
+}
+
+func RemoveEvent(s []model.Event, index int) []model.Event {
+	return append(s[:index], s[index+1:]...)
+}
+
+func (e *EventService) addOccurrencesToEvents(occurrences []time.Time, event model.Event, events *[]model.Event) {
+	event.RepeatOption = ""
+	event.Repeatable = false
+	for _, v := range occurrences {
+		event.BeginTime = v
+		event.EndTime = event.BeginTime.Add(time.Duration(event.Duration) * time.Minute)
+		*events = append(*events, event)
+	}
 }
 
 func (e *EventService) ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) error {
 	userEvent, err := e.Repository.ChangeUserEventStatus(ctx, eventID, userID, status)
 
 	if err != nil || userEvent.EventID == 0 {
-		return errors.Wrap(model.ErrGettingUserEventFromDatabase, fmt.Sprintf("userID:%d, eventID:%d", userID, eventID))
+		return errors.Wrapf(model.ErrGettingUserEventFromDatabase, "userID:%d, eventID:%d", userID, eventID)
 	}
 	if userEvent.Status != model.NotAnswered {
-		return errors.Wrap(model.ErrInvitationAlreadyAnswered, fmt.Sprintf("userID:%d, eventID:%d", userID, eventID))
+		return errors.Wrapf(model.ErrInvitationAlreadyAnswered, "userID:%d, eventID:%d", userID, eventID)
 	}
 
 	return nil

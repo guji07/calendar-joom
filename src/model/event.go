@@ -2,14 +2,13 @@ package model
 
 import "time"
 
-type RepeatOptions string
-
 type Event struct {
 	Id           int64            `json:"id" db:"id" goqu:"skipinsert"`
 	Name         string           `json:"name" db:"name"`
 	Author       int              `json:"author" db:"author"`
 	Repeatable   bool             `json:"repeatable" db:"repeatable"`
-	RepeatOption RepeatOptions    `json:"repeat_options" db:"repeat_options"`
+	RepeatOption string           `json:"repeat_options" db:"repeat_options"`
+	CreatedAt    time.Time        `json:"created_at" db:"created_at" goqu:"skipinsert"`
 	BeginTime    time.Time        `json:"begin_time" db:"begin_time"`
 	EndTime      time.Time        `json:"end_time" db:"end_time"`
 	Duration     int              `json:"duration" db:"duration"`
@@ -18,7 +17,7 @@ type Event struct {
 	Status       InvitationStatus `json:"status" db:"status" goqu:"skipinsert"`
 }
 
-type InvitationStatus = string
+type InvitationStatus string
 
 var (
 	Accepted    InvitationStatus = "accepted"
@@ -27,8 +26,9 @@ var (
 )
 
 type UserEvent struct {
-	Id      int64            `db:"id" goqu:"skipinsert"`
-	UserID  int              `db:"user_id"`
-	EventID int64            `db:"event_id"`
-	Status  InvitationStatus `db:"status"`
+	Id        int64            `db:"id" goqu:"skipinsert"`
+	UserID    int              `db:"user_id"`
+	EventID   int64            `db:"event_id"`
+	Status    InvitationStatus `db:"status"`
+	CreatedAt time.Time        `json:"created_at" db:"created_at" goqu:"skipinsert"`
 }

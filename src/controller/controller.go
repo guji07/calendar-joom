@@ -33,6 +33,8 @@ func (c *CalendarController) AbortWithBaseErrorJson(ctx *gin.Context, err error,
 		status = http.StatusConflict
 	case errors.Is(err, model.ErrGettingEvent):
 		status = http.StatusNotFound
+	case errors.Is(err, model.ErrUserNotExist):
+		status = http.StatusBadRequest
 	}
 	c.Logger.Error(err)
 	ctx.AbortWithStatusJSON(status, err.Error())

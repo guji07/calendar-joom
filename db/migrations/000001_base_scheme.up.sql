@@ -3,13 +3,15 @@ create table users (
                        primary key(id),
                        login text not null unique,
                        first_name text not null,
-                       last_name text not null
+                       last_name text not null,
+                       created_at timestamp not null default now()
 );
 
 create table events (
                         id bigserial,
                         primary key(id),
                         name text not null,
+                        created_at timestamp not null default now(),
                         author int not null,
                         constraint fk_author foreign key(author) references users,
                         repeat_options text,
@@ -33,6 +35,7 @@ create table users_events (
                               user_id int not null,
                               event_id bigint not null,
                               status invitation_status,
+                              created_at timestamp not null default now(),
                               constraint fk_user foreign key(user_id) references users,
                               constraint fk_event foreign key(event_id) references events
 );

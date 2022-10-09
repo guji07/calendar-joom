@@ -4,6 +4,7 @@ import (
 	"cryptoColony/src/model"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -82,7 +83,7 @@ func (c *CalendarController) CreateEvent(ctx *gin.Context) {
 		Name:         req.Name,
 		Author:       req.Author,
 		Repeatable:   req.Repeatable,
-		RepeatOption: model.RepeatOptions(req.RepeatOptions),
+		RepeatOption: req.RepeatOptions,
 		BeginTime:    req.BeginTime.Truncate(time.Minute),
 		EndTime:      req.EndTime.Truncate(time.Minute),
 		IsPrivate:    req.IsPrivate,
@@ -169,7 +170,32 @@ func (c *CalendarController) GetUserEvents(ctx *gin.Context) {
 		return
 	}
 
-	events, err := c.EventService.GetEventsByUserID(ctx, userID)
+	exist, err := c.UserService.IsUserExist(ctx, userID)
+	if err != nil {
+		c.AbortWithBaseErrorJson(ctx, err, http.StatusBadRequest)
+		return
+	}
+	if !exist {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrUserNotExist, "userID: %d", userID), http.StatusBadRequest)
+		return
+	}
+
+	from, err := time.Parse(time.RFC3339, ctx.Query("from"))
+	if err != nil || from.IsZero() {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrParseTimeInRequest, "err: %e, time parsed from: %s", err, from), http.StatusBadRequest)
+		return
+	}
+
+	to, err := time.Parse(time.RFC3339, ctx.Query("to"))
+	if err != nil || to.IsZero() {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrParseTimeInRequest, "err: %e, time parsed to: %s", err, to), http.StatusBadRequest)
+		return
+	}
+
+	events, err := c.EventService.GetEventsByUserID(ctx, userID, from, to)
 	if err != nil {
 		c.AbortWithBaseErrorJson(ctx, err, http.StatusInternalServerError)
 		return
