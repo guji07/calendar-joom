@@ -40,7 +40,14 @@ func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invit
 }
 
 func (e *EventService) GetEvent(ctx context.Context, eventID int) (model.Event, error) {
-	return e.Repository.GetEvent(ctx, eventID)
+	event, err := e.Repository.GetEvent(ctx, eventID)
+	if err != nil {
+		return model.Event{}, err
+	}
+	if event.Id == 0 {
+		return model.Event{}, errors.Wrap(model.ErrGettingEvent, fmt.Sprintf("eventID:%d", eventID))
+	}
+	return event, nil
 }
 
 func (e *EventService) GetEventsByUserID(ctx context.Context, userID int) ([]model.Event, error) {

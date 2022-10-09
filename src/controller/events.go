@@ -39,8 +39,8 @@ type GetEventResp struct {
 type RespondOnEventReq struct{}
 
 type FindWindowForEventReq struct {
-	UsersIDs []int         `json:"users_ids" validator:"len gt"`
-	Duration time.Duration `json:"duration" validator:"required"`
+	UsersIDs []int `json:"users_ids"`
+	Duration int   `json:"duration" validator:"required"`
 }
 
 type GetUserEventsResp struct {
@@ -122,8 +122,8 @@ func (c *CalendarController) GetEvent(ctx *gin.Context) {
 		Name:       event.Name,
 		Author:     event.Author,
 		Repeatable: event.Repeatable,
-		BeginTime:  event.BeginTime,
-		EndTime:    event.EndTime,
+		BeginTime:  event.BeginTime.UTC(),
+		EndTime:    event.EndTime.UTC(),
 		Duration:   event.Duration,
 		IsPrivate:  event.IsPrivate,
 		Details:    event.Details,
@@ -200,7 +200,7 @@ func (c *CalendarController) FindWindowForEvent(ctx *gin.Context) {
 		return
 	}
 
-	startTime, err := c.UserService.FindWindowForUsers(ctx, req.UsersIDs, req.Duration)
+	startTime, err := c.UserService.FindWindowForUsers(ctx, req.UsersIDs, time.Duration(req.Duration))
 	if err != nil {
 		c.AbortWithBaseErrorJson(ctx, err, http.StatusInternalServerError)
 		return

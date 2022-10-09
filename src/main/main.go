@@ -78,7 +78,7 @@ func startServer(appConfig *config.AppConfig, connectionUrl string) {
 	srv.POST("/events", calendarController.CreateEvent)
 	srv.GET("/events/:id", calendarController.GetEvent)
 	srv.GET("/events/:id/respond", calendarController.RespondOnEvent)
-	srv.GET("/events/window_by_users", calendarController.FindWindowForEvent)
+	srv.POST("/events/window_by_users", calendarController.FindWindowForEvent)
 	err = srv.Run()
 	if err != nil {
 		log.Fatal(err)

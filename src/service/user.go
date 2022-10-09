@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
+	"time"
+
 	"cryptoColony/src/model"
 	"cryptoColony/src/storage"
-	"time"
 )
 
 type UserService struct {
@@ -20,40 +21,43 @@ func (u *UserService) CreateUser(ctx context.Context, user model.User) (int, err
 }
 
 func (u *UserService) FindWindowForUsers(ctx context.Context, usersIDs []int, duration time.Duration) (time.Time, error) {
-	freeTimeForEvent := time.Now().Truncate(time.Minute)
+	freeTimeForEvent := time.Now().Truncate(time.Minute).UTC()
 
 	var found = false
 	for !found {
+		found = true
 		for _, userID := range usersIDs {
-			isFree, err := u.CheckTimerangeForUserFree(ctx, userID, freeTimeForEvent, freeTimeForEvent.Add(time.Minute*duration))
+			isFree, overlapEnd, err := u.CheckTimerangeForUserFree(ctx, userID, freeTimeForEvent, freeTimeForEvent.Add(time.Minute*duration))
 			if err != nil {
 				return time.Time{}, err
 			}
 			if !isFree {
-				freeTimeForEvent = freeTimeForEvent.Add(time.Minute * duration)
+				freeTimeForEvent = overlapEnd
+				found = false
 				break
 			}
 		}
-		found = true
 	}
 	return freeTimeForEvent, nil
 }
 
 func (u *UserService) CheckTimerangeForUserFree(ctx context.Context, userID int,
-	startTime, endTime time.Time) (isFree bool, err error) {
+	startTime, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
 	events, err := u.Repository.GetEventsByUserID(ctx, userID)
 
 	for _, v := range events {
-		if u.isTimeRangesOverlaps(startTime, endTime, v.BeginTime, v.EndTime) {
-			return false, nil
+		if u.isTimeRangesOverlaps(startTime, endTime, v.BeginTime.UTC(), v.EndTime.UTC()) {
+			return false, v.EndTime.UTC(), nil
 		}
 	}
 	if err != nil {
-		return false, err
+		return false, time.Time{}, err
 	}
-	return true, nil
+	return true, time.Time{}, nil
 }
 
-func (u *UserService) isTimeRangesOverlaps(startTime1, endTime1, startTime2, endTime2 time.Time) bool {
-	return startTime1.Before(endTime2) && startTime2.Before(endTime1)
+func (u *UserService) isTimeRangesOverlaps(windowStart, windowEnd, eventStart, eventEnd time.Time) bool {
+	println(windowStart.String(), windowEnd.String(), eventStart.String(), eventEnd.String())
+	println("check results: ", windowStart.Before(eventEnd) && eventStart.Before(windowEnd))
+	return windowStart.Before(eventEnd) && eventStart.Before(windowEnd)
 }

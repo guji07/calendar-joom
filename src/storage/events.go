@@ -34,7 +34,7 @@ func (r *Repository) GetEventsByUserID(ctx context.Context, userID int) ([]model
 	query := r.storage.Select("e.*", "ue.status").From(EventsTable.As("e")).
 		Join(UsersEventsTable.As("ue"),
 			goqu.On(goqu.I("e.id").Eq(goqu.I("ue.event_id")))).
-		Where(goqu.Ex{"ue.user_id": userID})
+		Where(goqu.Ex{"ue.user_id": userID}, goqu.I("ue.status").In(model.Accepted, model.NotAnswered))
 	print(query.ToSQL())
 
 	err := query.ScanStructsContext(ctx, &events)
