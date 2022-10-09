@@ -29,7 +29,7 @@ func NewCalendarController(userService service.UserService, eventService service
 
 func (c *CalendarController) AbortWithBaseErrorJson(ctx *gin.Context, err error, status int) {
 	switch {
-	case errors.As(err, model.ErrInvitationAlreadyAnswered):
+	case errors.Is(err, model.ErrInvitationAlreadyAnswered):
 		status = http.StatusAlreadyReported
 	}
 	c.Logger.Error(err)

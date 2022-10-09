@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"github.com/pkg/errors"
 
 	"cryptoColony/src/model"
 	"cryptoColony/src/storage"
@@ -46,5 +48,14 @@ func (e *EventService) GetEventsByUserID(ctx context.Context, userID int) ([]mod
 }
 
 func (e *EventService) ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) error {
-	return e.Repository.ChangeUserEventStatus(ctx, eventID, userID, status)
+	userEvent, err := e.Repository.ChangeUserEventStatus(ctx, eventID, userID, status)
+
+	if err != nil || userEvent.EventID == 0 {
+		return errors.Wrap(model.ErrGettingUserEventFromDatabase, fmt.Sprintf("userID:%d, eventID:%d", userID, eventID))
+	}
+	if userEvent.Status != model.NotAnswered {
+		return errors.Wrap(model.ErrInvitationAlreadyAnswered, fmt.Sprintf("userID:%d, eventID:%d", userID, eventID))
+	}
+
+	return nil
 }

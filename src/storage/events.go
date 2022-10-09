@@ -2,11 +2,8 @@ package storage
 
 import (
 	"context"
-	"fmt"
-	"github.com/doug-martin/goqu/v9"
-	"github.com/pkg/errors"
-
 	"cryptoColony/src/model"
+	"github.com/doug-martin/goqu/v9"
 )
 
 func (r *Repository) CreateEvent(ctx context.Context, event model.Event) (int64, error) {
@@ -48,17 +45,16 @@ func (r *Repository) GetEventsByUserID(ctx context.Context, userID int) ([]model
 	return events, nil
 }
 
-func (r *Repository) ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) error {
+func (r *Repository) ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) (model.UserEvent, error) {
 	var userEvent model.UserEvent
+
 	haveEvent, err := r.storage.Select().From(UsersEventsTable).Where(goqu.Ex{
 		"event_id": eventID,
 		"user_id":  userID}).ScanStructContext(ctx, &userEvent)
 	if err != nil || !haveEvent {
-		return errors.Wrap(model.ErrGettingUserEventFromDatabase, fmt.Sprintf("userID:%d, eventID:%d", eventID, userID))
+		return userEvent, err
 	}
-	if userEvent.Status != model.NotAnswered {
-		return errors.Wrap(model.ErrInvitationAlreadyAnswered, fmt.Sprintf("userID:%d, eventID:%d", userID, eventID))
-	}
+
 	_, err = r.storage.
 		Update(UsersEventsTableName).
 		Where(goqu.Ex{
@@ -67,5 +63,5 @@ func (r *Repository) ChangeUserEventStatus(ctx context.Context, eventID, userID 
 			"status":   model.NotAnswered,
 		}).Set(goqu.Ex{"status": status}).Executor().ExecContext(ctx)
 
-	return err
+	return userEvent, err
 }
