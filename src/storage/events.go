@@ -2,9 +2,11 @@ package storage
 
 import (
 	"context"
-	"cryptoColony/src/model"
-	"github.com/doug-martin/goqu/v9"
 	"time"
+
+	"cryptoColony/src/model"
+
+	"github.com/doug-martin/goqu/v9"
 )
 
 func (r *Repository) CreateEvent(ctx context.Context, event model.Event) (int64, error) {

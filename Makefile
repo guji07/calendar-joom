@@ -12,3 +12,6 @@ docker-stop:
 run-local:
 	docker-compose up -d
 	go run ./src/main/main.go -config config-local.yml
+
+test:
+	go test ./...

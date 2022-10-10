@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	"cryptoColony/src/model"
 	"time"
+
+	"cryptoColony/src/model"
 
 	"github.com/doug-martin/goqu/v9"
 )
