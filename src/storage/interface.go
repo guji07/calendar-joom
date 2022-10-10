@@ -24,7 +24,7 @@ type RepositoryInterface interface {
 
 	CreateEvent(ctx context.Context, user model.Event) (int64, error)
 	GetEvent(ctx context.Context, eventID int) (model.Event, error)
-	GetEventsByUserIDs(ctx context.Context, userID []int, from, to time.Time) ([]model.Event, error)
+	GetEventsByUserIDs(ctx context.Context, userIDs []int, from, to *time.Time) ([]model.Event, error)
 
 	CreateUsersEvents(ctx context.Context, usersEvents []model.UserEvent) error
 	ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) (model.UserEvent, error)

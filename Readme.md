@@ -9,6 +9,7 @@
 - получать список встреч для пользователя
 - получать ближайшее окно для встречи определенной продолжительности учитывая календари заданных пользователей
 - все встречи поддерживают повторы по формату RRule iCalendar RFC
+- Из дополнительных требований реализован показ деталей встречи только владельцу, если встреча приватная
 
 
 ## _Запуск_
@@ -63,7 +64,7 @@ curl --location --request POST 'localhost:8080/events' \
 ```
 ##GetEvent
 ```bash
-curl --location --request GET 'localhost:8080/events/1'
+curl --location --request GET 'localhost:8080/events/1?user_id=2'
 ```
 ##RespondOnEvent
 ```bash

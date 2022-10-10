@@ -87,7 +87,7 @@ func (c *CalendarController) GetUserEvents(ctx *gin.Context) {
 		return
 	}
 
-	events, err := c.EventService.GetEventsByUserID(ctx, userID, from, to)
+	events, err := c.EventService.GetEventsByUserID(ctx, userID, from.UTC(), to.UTC())
 	if err != nil {
 		c.AbortWithBaseErrorJson(ctx, err, http.StatusInternalServerError)
 		return

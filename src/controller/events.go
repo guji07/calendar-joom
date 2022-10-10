@@ -98,6 +98,11 @@ func (c *CalendarController) CreateEvent(ctx *gin.Context) {
 
 func (c *CalendarController) GetEvent(ctx *gin.Context) {
 	id := ctx.Param("id")
+	userID, err := strconv.Atoi(ctx.Query("user_id"))
+	if err != nil {
+		c.AbortWithBaseErrorJson(ctx, err, http.StatusBadRequest)
+		return
+	}
 
 	eventID, err := strconv.Atoi(id)
 
@@ -115,6 +120,9 @@ func (c *CalendarController) GetEvent(ctx *gin.Context) {
 	if err != nil {
 		c.AbortWithBaseErrorJson(ctx, err, http.StatusInternalServerError)
 		return
+	}
+	if event.IsPrivate && event.Author != userID {
+		event.Details = ""
 	}
 
 	ctx.JSON(http.StatusOK, GetEventResp{
