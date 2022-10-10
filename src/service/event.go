@@ -76,11 +76,9 @@ func (e *EventService) GetEventsByUserID(ctx context.Context, userID int, from, 
 				return []model.Event{}, err
 			}
 			occurrences := ret.Between(from.Add(-(time.Duration(event.Duration) * time.Minute)), to, true)
-			if len(occurrences) > 0 {
-				events = RemoveEvent(events, i)
-				i--
-				e.addOccurrencesToEvents(occurrences, event, &events)
-			}
+			events = RemoveEvent(events, i)
+			i--
+			e.addOccurrencesToEvents(occurrences, event, &events)
 		}
 	}
 	sort.Slice(events, func(i, j int) bool {
@@ -94,7 +92,6 @@ func RemoveEvent(s []model.Event, index int) []model.Event {
 }
 
 func (e *EventService) addOccurrencesToEvents(occurrences []time.Time, event model.Event, events *[]model.Event) {
-	event.RepeatOption = ""
 	event.Repeatable = false
 	for _, v := range occurrences {
 		event.BeginTime = v
@@ -107,7 +104,7 @@ func (e *EventService) ChangeUserEventStatus(ctx context.Context, eventID, userI
 	userEvent, err := e.Repository.ChangeUserEventStatus(ctx, eventID, userID, status)
 
 	if err != nil || userEvent.EventID == 0 {
-		return errors.Wrapf(model.ErrGettingUserEventFromDatabase, "userID:%d, eventID:%d", userID, eventID)
+		return errors.Wrapf(model.ErrGettingUserEventFromDatabase, "userID:%d, eventID:%d, err: %v", userID, eventID, err)
 	}
 	if userEvent.Status != model.NotAnswered {
 		return errors.Wrapf(model.ErrInvitationAlreadyAnswered, "userID:%d, eventID:%d", userID, eventID)

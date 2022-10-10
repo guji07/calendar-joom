@@ -6,7 +6,7 @@ type Event struct {
 	Id           int64            `json:"id" db:"id" goqu:"skipinsert"`
 	Name         string           `json:"name" db:"name"`
 	Author       int              `json:"author" db:"author"`
-	Repeatable   bool             `json:"repeatable" db:"repeatable"`
+	Repeatable   bool             `json:"repeatable,omitempty" db:"repeatable"`
 	RepeatOption string           `json:"repeat_options" db:"repeat_options"`
 	CreatedAt    time.Time        `json:"created_at" db:"created_at" goqu:"skipinsert"`
 	BeginTime    time.Time        `json:"begin_time" db:"begin_time"`

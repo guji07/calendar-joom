@@ -19,11 +19,18 @@
 ```bash
 make
 ```
-# Документация api
 
-## HTTP API
+Запуск линтера:
+```bash
+make lint
+```
 
-###
+Запуск тестов:
+```bash
+make test
+```
+# Описание http api
+
 ##CreateUser
 ```bash
 curl --location --request POST 'localhost:8080/users' \

@@ -2,8 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 	"io"
 	"net/http"
+	"strconv"
+	"time"
 
 	"cryptoColony/src/model"
 
@@ -50,4 +53,44 @@ func (c *CalendarController) CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, CreateUserResponse{UserId: id})
+}
+
+func (c *CalendarController) GetUserEvents(ctx *gin.Context) {
+	userID, err := strconv.Atoi(ctx.Param("user_id"))
+	if err != nil {
+		c.AbortWithBaseErrorJson(ctx, err, http.StatusBadRequest)
+		return
+	}
+
+	exist, err := c.UserService.IsUserExist(ctx, userID)
+	if err != nil {
+		c.AbortWithBaseErrorJson(ctx, err, http.StatusBadRequest)
+		return
+	}
+	if !exist {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrUserNotExist, "userID: %d", userID), http.StatusBadRequest)
+		return
+	}
+
+	from, err := time.Parse(time.RFC3339, ctx.Query("from"))
+	if err != nil || from.IsZero() {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrParseTimeInRequest, "err: %e, time parsed from: %s", err, from), http.StatusBadRequest)
+		return
+	}
+
+	to, err := time.Parse(time.RFC3339, ctx.Query("to"))
+	if err != nil || to.IsZero() {
+		c.AbortWithBaseErrorJson(ctx, errors.Wrapf(
+			model.ErrParseTimeInRequest, "err: %e, time parsed to: %s", err, to), http.StatusBadRequest)
+		return
+	}
+
+	events, err := c.EventService.GetEventsByUserID(ctx, userID, from, to)
+	if err != nil {
+		c.AbortWithBaseErrorJson(ctx, err, http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, events)
 }
