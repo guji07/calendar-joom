@@ -63,13 +63,16 @@ func (e *EventService) GetEvent(ctx context.Context, eventID int) (model.Event, 
 }
 
 func (e *EventService) GetEventsByUserID(ctx context.Context, userID int, from, to time.Time) ([]model.Event, error) {
-	events, err := e.Repository.GetEventsByUserIDs(ctx, []int{userID}, from, to)
+	events, err := e.Repository.GetEventsByUserIDs(ctx, []int{userID}, &from, &to)
 	if err != nil {
 		return []model.Event{}, err
 	}
 
 	for i := 0; i < len(events); i++ {
 		event := events[i]
+		if event.IsPrivate && events[i].Author != userID {
+			events[i].Details = ""
+		}
 		if event.Repeatable {
 			ret, err := rrule.StrToRRule(event.RepeatOption)
 			if err != nil {
@@ -94,8 +97,8 @@ func RemoveEvent(s []model.Event, index int) []model.Event {
 func (e *EventService) addOccurrencesToEvents(occurrences []time.Time, event model.Event, events *[]model.Event) {
 	event.Repeatable = false
 	for _, v := range occurrences {
-		event.BeginTime = v
-		event.EndTime = event.BeginTime.Add(time.Duration(event.Duration) * time.Minute)
+		event.BeginTime = v.UTC()
+		event.EndTime = event.BeginTime.Add(time.Duration(event.Duration) * time.Minute).UTC()
 		*events = append(*events, event)
 	}
 }

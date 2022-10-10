@@ -32,7 +32,7 @@ func (r *Repository) GetEvent(ctx context.Context, eventID int) (model.Event, er
 	return event, nil
 }
 
-func (r *Repository) GetEventsByUserIDs(ctx context.Context, userIDs []int, from, to time.Time) ([]model.Event, error) {
+func (r *Repository) GetEventsByUserIDs(ctx context.Context, userIDs []int, from, to *time.Time) ([]model.Event, error) {
 	var events []model.Event
 	query := r.storage.
 		Select("e.*", "ue.status").
@@ -44,11 +44,11 @@ func (r *Repository) GetEventsByUserIDs(ctx context.Context, userIDs []int, from
 			goqu.I("ue.status").In(model.Accepted, model.NotAnswered),
 		)
 
-	if !from.IsZero() {
-		query.Where(goqu.Or(goqu.I("e.begin_time").Lte(to), goqu.I("e.repeatable").Eq(true)))
+	if from != nil {
+		query = query.Where(goqu.Or(goqu.I("e.begin_time").Lte(*to), goqu.I("e.repeatable").Eq(true)))
 	}
-	if !to.IsZero() {
-		query.Where(goqu.Or(goqu.I("e.end_time").Gte(from), goqu.I("e.repeatable").Eq(true)))
+	if to != nil {
+		query = query.Where(goqu.Or(goqu.I("e.end_time").Gte(*from), goqu.I("e.repeatable").Eq(true)))
 	}
 
 	err := query.ScanStructsContext(ctx, &events)

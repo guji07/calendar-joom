@@ -56,7 +56,7 @@ func (u *UserService) searchForFreeTime(ctx context.Context, usersIDs []int, dur
 
 func (u *UserService) checkTimerangeIsFree(ctx context.Context, userIDs []int,
 	startTime, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
-	events, err := u.Repository.GetEventsByUserIDs(ctx, userIDs, time.Time{}, startTime)
+	events, err := u.Repository.GetEventsByUserIDs(ctx, userIDs, nil, nil)
 	for _, event := range events {
 		if event.Repeatable {
 			isFree, overlapEnd, err = u.checkRepeatableEvent(event, startTime, endTime)

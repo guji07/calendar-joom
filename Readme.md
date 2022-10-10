@@ -63,7 +63,7 @@ curl --location --request POST 'localhost:8080/events' \
 ```
 ##GetEvent
 ```bash
-curl --location --request GET 'localhost:8080/events/1'
+curl --location --request GET 'localhost:8080/events/1?user_id=2'
 ```
 ##RespondOnEvent
 ```bash
