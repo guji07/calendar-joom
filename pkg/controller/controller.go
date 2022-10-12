@@ -1,13 +1,15 @@
 package controller
 
 import (
-	"cryptoColony/src/model"
-	"cryptoColony/src/service"
+	"net/http"
+
+	"calendar/pkg/model"
+	"calendar/pkg/service"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type CalendarController struct {

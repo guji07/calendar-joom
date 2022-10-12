@@ -1,10 +1,9 @@
 package storage
 
 import (
+	"calendar/pkg/model"
 	"context"
 	"time"
-
-	"cryptoColony/src/model"
 
 	"github.com/doug-martin/goqu/v9"
 )

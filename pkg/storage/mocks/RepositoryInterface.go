@@ -3,9 +3,8 @@
 package mocks
 
 import (
+	model2 "calendar/pkg/model"
 	context "context"
-	model "cryptoColony/src/model"
-
 	mock "github.com/stretchr/testify/mock"
 
 	time "time"
@@ -17,18 +16,18 @@ type RepositoryInterface struct {
 }
 
 // ChangeUserEventStatus provides a mock function with given fields: ctx, eventID, userID, status
-func (_m *RepositoryInterface) ChangeUserEventStatus(ctx context.Context, eventID int, userID int, status model.InvitationStatus) (model.UserEvent, error) {
+func (_m *RepositoryInterface) ChangeUserEventStatus(ctx context.Context, eventID int, userID int, status model2.InvitationStatus) (model2.UserEvent, error) {
 	ret := _m.Called(ctx, eventID, userID, status)
 
-	var r0 model.UserEvent
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, model.InvitationStatus) model.UserEvent); ok {
+	var r0 model2.UserEvent
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, model2.InvitationStatus) model2.UserEvent); ok {
 		r0 = rf(ctx, eventID, userID, status)
 	} else {
-		r0 = ret.Get(0).(model.UserEvent)
+		r0 = ret.Get(0).(model2.UserEvent)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, int, model.InvitationStatus) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int, int, model2.InvitationStatus) error); ok {
 		r1 = rf(ctx, eventID, userID, status)
 	} else {
 		r1 = ret.Error(1)
@@ -38,18 +37,18 @@ func (_m *RepositoryInterface) ChangeUserEventStatus(ctx context.Context, eventI
 }
 
 // CreateEvent provides a mock function with given fields: ctx, user
-func (_m *RepositoryInterface) CreateEvent(ctx context.Context, user model.Event) (int64, error) {
+func (_m *RepositoryInterface) CreateEvent(ctx context.Context, user model2.Event) (int64, error) {
 	ret := _m.Called(ctx, user)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, model.Event) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, model2.Event) int64); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, model.Event) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, model2.Event) error); ok {
 		r1 = rf(ctx, user)
 	} else {
 		r1 = ret.Error(1)
@@ -59,18 +58,18 @@ func (_m *RepositoryInterface) CreateEvent(ctx context.Context, user model.Event
 }
 
 // CreateUser provides a mock function with given fields: ctx, user
-func (_m *RepositoryInterface) CreateUser(ctx context.Context, user model.User) (int, error) {
+func (_m *RepositoryInterface) CreateUser(ctx context.Context, user model2.User) (int, error) {
 	ret := _m.Called(ctx, user)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, model.User) int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, model2.User) int); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, model.User) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, model2.User) error); ok {
 		r1 = rf(ctx, user)
 	} else {
 		r1 = ret.Error(1)
@@ -80,11 +79,11 @@ func (_m *RepositoryInterface) CreateUser(ctx context.Context, user model.User) 
 }
 
 // CreateUsersEvents provides a mock function with given fields: ctx, usersEvents
-func (_m *RepositoryInterface) CreateUsersEvents(ctx context.Context, usersEvents []model.UserEvent) error {
+func (_m *RepositoryInterface) CreateUsersEvents(ctx context.Context, usersEvents []model2.UserEvent) error {
 	ret := _m.Called(ctx, usersEvents)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, []model.UserEvent) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, []model2.UserEvent) error); ok {
 		r0 = rf(ctx, usersEvents)
 	} else {
 		r0 = ret.Error(0)
@@ -94,14 +93,14 @@ func (_m *RepositoryInterface) CreateUsersEvents(ctx context.Context, usersEvent
 }
 
 // GetEvent provides a mock function with given fields: ctx, eventID
-func (_m *RepositoryInterface) GetEvent(ctx context.Context, eventID int) (model.Event, error) {
+func (_m *RepositoryInterface) GetEvent(ctx context.Context, eventID int) (model2.Event, error) {
 	ret := _m.Called(ctx, eventID)
 
-	var r0 model.Event
-	if rf, ok := ret.Get(0).(func(context.Context, int) model.Event); ok {
+	var r0 model2.Event
+	if rf, ok := ret.Get(0).(func(context.Context, int) model2.Event); ok {
 		r0 = rf(ctx, eventID)
 	} else {
-		r0 = ret.Get(0).(model.Event)
+		r0 = ret.Get(0).(model2.Event)
 	}
 
 	var r1 error
@@ -115,15 +114,15 @@ func (_m *RepositoryInterface) GetEvent(ctx context.Context, eventID int) (model
 }
 
 // GetEventsByUserIDs provides a mock function with given fields: ctx, userIDs, from, to
-func (_m *RepositoryInterface) GetEventsByUserIDs(ctx context.Context, userIDs []int, from *time.Time, to *time.Time) ([]model.Event, error) {
+func (_m *RepositoryInterface) GetEventsByUserIDs(ctx context.Context, userIDs []int, from *time.Time, to *time.Time) ([]model2.Event, error) {
 	ret := _m.Called(ctx, userIDs, from, to)
 
-	var r0 []model.Event
-	if rf, ok := ret.Get(0).(func(context.Context, []int, *time.Time, *time.Time) []model.Event); ok {
+	var r0 []model2.Event
+	if rf, ok := ret.Get(0).(func(context.Context, []int, *time.Time, *time.Time) []model2.Event); ok {
 		r0 = rf(ctx, userIDs, from, to)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]model.Event)
+			r0 = ret.Get(0).([]model2.Event)
 		}
 	}
 

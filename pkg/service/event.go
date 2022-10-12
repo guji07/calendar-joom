@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/teambition/rrule-go"
 	"sort"
 	"time"
 
-	"cryptoColony/src/model"
-	"cryptoColony/src/storage"
+	"github.com/pkg/errors"
+	"github.com/teambition/rrule-go"
+
+	"calendar/pkg/model"
+	"calendar/pkg/storage"
 )
 
 type EventService struct {

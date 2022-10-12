@@ -1,10 +1,9 @@
 package storage
 
 import (
+	model2 "calendar/pkg/model"
 	"context"
 	"time"
-
-	"cryptoColony/src/model"
 
 	"github.com/doug-martin/goqu/v9"
 )
@@ -19,15 +18,15 @@ var (
 )
 
 type RepositoryInterface interface {
-	CreateUser(ctx context.Context, user model.User) (int, error)
+	CreateUser(ctx context.Context, user model2.User) (int, error)
 	IsUserExist(ctx context.Context, userID int) (bool, error)
 
-	CreateEvent(ctx context.Context, user model.Event) (int64, error)
-	GetEvent(ctx context.Context, eventID int) (model.Event, error)
-	GetEventsByUserIDs(ctx context.Context, userIDs []int, from, to *time.Time) ([]model.Event, error)
+	CreateEvent(ctx context.Context, user model2.Event) (int64, error)
+	GetEvent(ctx context.Context, eventID int) (model2.Event, error)
+	GetEventsByUserIDs(ctx context.Context, userIDs []int, from, to *time.Time) ([]model2.Event, error)
 
-	CreateUsersEvents(ctx context.Context, usersEvents []model.UserEvent) error
-	ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model.InvitationStatus) (model.UserEvent, error)
+	CreateUsersEvents(ctx context.Context, usersEvents []model2.UserEvent) error
+	ChangeUserEventStatus(ctx context.Context, eventID, userID int, status model2.InvitationStatus) (model2.UserEvent, error)
 }
 
 type Repository struct {

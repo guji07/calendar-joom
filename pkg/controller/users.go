@@ -2,15 +2,15 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
 
-	"cryptoColony/src/model"
+	"calendar/pkg/model"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 type CreateUserReq struct {

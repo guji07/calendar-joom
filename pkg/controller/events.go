@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"cryptoColony/src/model"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	"calendar/pkg/model"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,14 +2,15 @@ package service
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
 
-	"cryptoColony/src/model"
-	"cryptoColony/src/storage/mocks"
+	"calendar/pkg/model"
+	"calendar/pkg/storage/mocks"
+
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var (

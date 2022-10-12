@@ -1,14 +1,13 @@
 package service
 
 import (
+	model2 "calendar/pkg/model"
+	"calendar/pkg/storage"
 	"context"
 	"github.com/pkg/errors"
 	"github.com/teambition/rrule-go"
 	"sort"
 	"time"
-
-	"cryptoColony/src/model"
-	"cryptoColony/src/storage"
 )
 
 type UserService struct {
@@ -19,7 +18,7 @@ func NewUserService(repository storage.RepositoryInterface) UserService {
 	return UserService{Repository: repository}
 }
 
-func (u *UserService) CreateUser(ctx context.Context, user model.User) (int, error) {
+func (u *UserService) CreateUser(ctx context.Context, user model2.User) (int, error) {
 	return u.Repository.CreateUser(ctx, user)
 }
 
@@ -75,7 +74,7 @@ func (u *UserService) checkTimerangeIsFree(ctx context.Context, userIDs []int,
 	return true, time.Time{}, nil
 }
 
-func (u *UserService) checkRepeatableEvent(event model.Event, startTime time.Time, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
+func (u *UserService) checkRepeatableEvent(event model2.Event, startTime time.Time, endTime time.Time) (isFree bool, overlapEnd time.Time, err error) {
 	ret, err := rrule.StrToRRule(event.RepeatOption)
 	if err != nil {
 		return false, time.Time{}, err

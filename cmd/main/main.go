@@ -3,17 +3,17 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"log"
 
-	"cryptoColony/src/config"
-	"cryptoColony/src/controller"
-	"cryptoColony/src/service"
-	"cryptoColony/src/storage"
+	"calendar/pkg/config"
+	"calendar/pkg/controller"
+	"calendar/pkg/service"
+	"calendar/pkg/storage"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
