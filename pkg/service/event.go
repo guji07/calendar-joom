@@ -21,17 +21,30 @@ func NewEventService(repository storage.RepositoryInterface) EventService {
 	return EventService{Repository: repository}
 }
 
-func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invitedUsers []int) (int64, error) {
+func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invitedUsers []int) (id int64, err error) {
 	exist, err := e.Repository.IsUserExist(ctx, event.Author)
 	if err != nil || !exist {
 		return 0, errors.Wrapf(model.ErrUserNotExist, "userID:%d", event.Author)
 	}
 
 	event.Duration = int(event.EndTime.Sub(event.BeginTime).Minutes())
-	eventID, err := e.Repository.CreateEvent(ctx, event)
+
+	tx, err := e.Repository.BeginTransaction()
+	if err != nil {
+		return 0, errors.Wrapf(model.ErrStartTransaction, "err:%v", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		} else {
+			_ = tx.Commit()
+		}
+	}()
+	eventID, err := e.Repository.CreateEventTx(ctx, tx, event)
 	if err != nil {
 		return 0, err
 	}
+
 	usersEvents := make([]model.UserEvent, len(invitedUsers))
 	for i, v := range invitedUsers {
 		exist, err := e.Repository.IsUserExist(ctx, v)
@@ -44,11 +57,12 @@ func (e *EventService) CreateEvent(ctx context.Context, event model.Event, invit
 			Status:  model.NotAnswered,
 		}
 	}
+
 	usersEvents = append(usersEvents, model.UserEvent{
 		UserID:  event.Author,
 		EventID: eventID,
 		Status:  model.Accepted})
-	err = e.Repository.CreateUsersEvents(ctx, usersEvents)
+	err = e.Repository.CreateUsersEventsTx(ctx, tx, usersEvents)
 	return eventID, err
 }
 

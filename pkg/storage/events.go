@@ -16,8 +16,28 @@ func (r *Repository) CreateEvent(ctx context.Context, event model.Event) (int64,
 	return id, err
 }
 
+func (r *Repository) CreateEventTx(ctx context.Context, tx *goqu.TxDatabase, event model.Event) (id int64, err error) {
+	if tx != nil {
+		_, err = tx.Insert(EventsTable).Rows(event).Returning("id").Executor().ScanValContext(ctx, &id)
+	} else {
+		_, err = r.storage.Insert(EventsTable).Rows(event).Returning("id").Executor().ScanValContext(ctx, &id)
+	}
+
+	return id, err
+}
+
 func (r *Repository) CreateUsersEvents(ctx context.Context, usersEvents []model.UserEvent) error {
 	_, err := r.storage.Insert(UsersEventsTable).Rows(usersEvents).Executor().ExecContext(ctx)
+	return err
+}
+
+func (r *Repository) CreateUsersEventsTx(ctx context.Context, tx *goqu.TxDatabase, usersEvents []model.UserEvent) (err error) {
+	if tx != nil {
+		_, err = tx.Insert(UsersEventsTable).Rows(usersEvents).Executor().ExecContext(ctx)
+	} else {
+		_, err = r.storage.Insert(UsersEventsTable).Rows(usersEvents).Executor().ExecContext(ctx)
+	}
+
 	return err
 }
 
